@@ -7,12 +7,8 @@
     <GameVer Condition="'$(GameVer)' == ''">23</GameVer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Survivalcraft">
-      <HintPath>Survivalcraft$(GameVer).dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Engine">
-      <HintPath>Engine$(GameVer).dll</HintPath>
+    <GameDll Include="*$(GameVer).dll" />
+    <Reference Include="@(GameDll)">
       <Private>false</Private>
     </Reference>
   </ItemGroup>
