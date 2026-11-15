@@ -29,7 +29,7 @@ namespace Game
                     int celda = subsystemTerrain.Terrain.GetCellValueFast(punto.X, punto.Y - 1, punto.Z);
                     int contenido = Terrain.ExtractContents(celda);
                     if (contenido == 0 || contenido == WaterBlock.Index) return 0f;
-                    return BlocksManager.Blocks[contenido].IsCollidable ? 1.0f : 0f;
+                    return BlocksManager.Blocks[contenido].IsCollidable ? 0.7f : 0f;
                 },
                 SpawnFunction = (SubsystemCreatureSpawn.CreatureType tipo, Point3 punto) =>
                     subsystemCreatureSpawn.SpawnCreatures(tipo, "GigantePequeno", punto, 1).Count
