@@ -1,0 +1,46 @@
+name: Compilar mod
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  compilar:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ver: ["23", "24"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Comprobar DLLs del juego
+        id: dlls
+        run: |
+          if [ -f "Survivalcraft${{ matrix.ver }}.dll" ] && [ -f "Engine${{ matrix.ver }}.dll" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Faltan Survivalcraft${{ matrix.ver }}.dll o Engine${{ matrix.ver }}.dll, se omite la version ${{ matrix.ver }}"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compilar
+        if: steps.dlls.outputs.ok == 'true'
+        run: dotnet build Mod.csproj -c Release -p:GameVer=${{ matrix.ver }} -o out
+
+      - name: Empaquetar .scmod
+        if: steps.dlls.outputs.ok == 'true'
+        run: python3 empaquetar.py base${{ matrix.ver }}.scmod out/GiganteCode.dll GigantePequeno_${{ matrix.ver }}_compilado.scmod
+
+      - name: Subir resultado
+        if: steps.dlls.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mod-${{ matrix.ver }}
+          path: |
+            out/GiganteCode.dll
+            GigantePequeno_${{ matrix.ver }}_compilado.scmod
