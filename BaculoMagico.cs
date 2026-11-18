@@ -88,21 +88,28 @@ namespace Game
 
         public override void Initialize()
         {
-            Model model = ContentManager.Get<Model>("Models/BaculoMagico");
-
-            // Se recorren todas las mallas y partes del modelo para que no se
-            // pierda ninguna pieza (corazon, cana y pieza superior).
-            foreach (ModelMesh mesh in model.Meshes)
+            try
             {
-                Matrix bone = BlockMesh.GetBoneAbsoluteTransform(mesh.ParentBone) * AjusteModelo;
-                foreach (ModelMeshPart part in mesh.MeshParts)
-                {
-                    m_standaloneBlockMesh.AppendModelMeshPart(
-                        part, bone, false, false, false, false, Color.White);
-                }
-            }
+                Model model = ContentManager.Get<Model>("Models/BaculoMagico");
 
-            m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
+                // Se recorren todas las mallas y partes del modelo para que no se
+                // pierda ninguna pieza (corazon, cana y pieza superior).
+                foreach (ModelMesh mesh in model.Meshes)
+                {
+                    Matrix bone = BlockMesh.GetBoneAbsoluteTransform(mesh.ParentBone) * AjusteModelo;
+                    foreach (ModelMeshPart part in mesh.MeshParts)
+                    {
+                        m_standaloneBlockMesh.AppendModelMeshPart(
+                            part, bone, false, false, false, false, Color.White);
+                    }
+                }
+
+                m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
+            }
+            catch (System.Exception e)
+            {
+                Log.Warning("BaculoMagico: no se pudo cargar el modelo o la textura (" + e.Message + ")");
+            }
             base.Initialize();
         }
 
@@ -117,11 +124,24 @@ namespace Game
         {
         }
 
+        private bool m_falloDibujo;
+
         public override void DrawBlock(PrimitivesRenderer3D primitivesRenderer, int value,
             Color color, float size, ref Matrix matrix, DrawBlockEnvironmentData environmentData)
         {
-            BlocksManager.DrawMeshBlock(primitivesRenderer, m_standaloneBlockMesh,
-                m_texture, color, 2f * size, ref matrix, environmentData);
+            // Si algo falla (modelo o textura sin cargar), no se dibuja nada en vez de romper la pantalla
+            if (m_falloDibujo) return;
+            try
+            {
+                if (m_texture == null) m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
+                BlocksManager.DrawMeshBlock(primitivesRenderer, m_standaloneBlockMesh,
+                    m_texture, color, 2f * size, ref matrix, environmentData);
+            }
+            catch (System.Exception e)
+            {
+                m_falloDibujo = true;
+                Log.Warning("BaculoMagico: no se pudo dibujar el icono (" + e.Message + ")");
+            }
         }
     }
 
