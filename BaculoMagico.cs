@@ -86,6 +86,20 @@ namespace Game
             return default(BlockPlacementData);
         }
 
+        // ---- DIAGNOSTICO TEMPORAL: muestra en la descripcion de la recipedia que paso con el icono ----
+        // Pon Diagnostico = false cuando el icono ya se vea bien.
+        private const bool Diagnostico = true;
+        private string m_estado = "sin inicializar";
+        private string m_errorDibujo = "";
+        private int m_dibujos;
+
+        public override string GetDescription(int value)
+        {
+            string d = base.GetDescription(value);
+            if (!Diagnostico) return d;
+            return d + " [diag: " + m_estado + "; dibujos=" + m_dibujos + (m_errorDibujo.Length > 0 ? "; error=" + m_errorDibujo : "") + "]";
+        }
+
         public override void Initialize()
         {
             try
@@ -105,9 +119,11 @@ namespace Game
                 }
 
                 m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
+                m_estado = "ok, vertices=" + m_standaloneBlockMesh.Vertices.Count + ", indices=" + m_standaloneBlockMesh.Indices.Count + ", textura=" + (m_texture != null);
             }
             catch (System.Exception e)
             {
+                m_estado = "fallo al iniciar: " + e.GetType().Name + " " + e.Message;
                 Log.Warning("BaculoMagico: no se pudo cargar el modelo o la textura (" + e.Message + ")");
             }
             base.Initialize();
@@ -136,10 +152,12 @@ namespace Game
                 if (m_texture == null) m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
                 BlocksManager.DrawMeshBlock(primitivesRenderer, m_standaloneBlockMesh,
                     m_texture, color, 2f * size, ref matrix, environmentData);
+                m_dibujos++;
             }
             catch (System.Exception e)
             {
                 m_falloDibujo = true;
+                m_errorDibujo = e.GetType().Name + " " + e.Message;
                 Log.Warning("BaculoMagico: no se pudo dibujar el icono (" + e.Message + ")");
             }
         }
