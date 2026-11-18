@@ -351,8 +351,8 @@ namespace GiganteCode
                 suscritos.Add(criatura.Entity);
                 ComponentCreature victima = criatura;
                 // OJO: en 2.4 ComponentHealth.Attacked ya no se dispara nunca. El evento real (el mismo que usan
-                // ChaseBehavior y HerdBehavior del juego) es ComponentHealth.Injured, que trae el Injury con el agresor.
-                criatura.ComponentHealth.Injured += (Injury lesion) => AlSerAtacado(victima, lesion.Attacker);
+                // ChaseBehavior y HerdBehavior del juego) es ComponentHealth.Injured, que en 2.3 entrega directamente al agresor.
+                criatura.ComponentHealth.Injured += (ComponentCreature agresor) => AlSerAtacado(victima, agresor);
             }
 
             // 2) los indigenas buscan gigantes (todos menos el muerto y el mutante) y los atacan
