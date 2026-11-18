@@ -87,7 +87,7 @@ namespace GiganteCode
 
         public override void __ModInitialize()
         {
-            ModsManager.RegisterHook("TerrainContentsGenerator24Initialize", this);
+            ModsManager.RegisterHook("TerrainContentsGenerator23Initialize", this);
             ModsManager.RegisterHook("OnProjectLoaded", this);
             ModsManager.RegisterHook("OnProjectDisposed", this);
             ModsManager.RegisterHook("SubsystemUpdate", this);
@@ -95,12 +95,12 @@ namespace GiganteCode
 
         // ---------------- Generacion del refugio (hilo del terreno) ----------------
         // Hook del API 1.8 - 1.9: agrega un paso a la generacion de chunks (paso 4, orden 1500)
-        public override void TerrainContentsGenerator24Initialize(
+        public override void TerrainContentsGenerator23Initialize(
             ITerrainContentsGenerator generator,
             SubsystemTerrain subsystemTerrain)
         {
             // el hook entrega la interfaz; el generador 2.4 es el que tiene los pasos de generacion
-            TerrainContentsGenerator24 generador = generator as TerrainContentsGenerator24;
+            TerrainContentsGenerator23 generador = generator as TerrainContentsGenerator23;
             if (generador == null) return;
             generador.ChunkGenerationStep4.Add(
                 new ChunkGenerationStep(1500, chunk => GenerarEnChunkSeguro(chunk)));

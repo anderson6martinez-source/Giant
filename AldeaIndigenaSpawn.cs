@@ -90,7 +90,7 @@ namespace GiganteCode
 
         public override void __ModInitialize()
         {
-            ModsManager.RegisterHook("TerrainContentsGenerator24Initialize", this);
+            ModsManager.RegisterHook("TerrainContentsGenerator23Initialize", this);
             ModsManager.RegisterHook("OnProjectLoaded", this);
             ModsManager.RegisterHook("OnProjectDisposed", this);
             ModsManager.RegisterHook("SubsystemUpdate", this);
@@ -101,7 +101,7 @@ namespace GiganteCode
             ITerrainContentsGenerator generator,
             SubsystemTerrain subsystemTerrain)
         {
-            TerrainContentsGenerator24 generador = generator as TerrainContentsGenerator24;
+            TerrainContentsGenerator23 generador = generator as TerrainContentsGenerator23;
             if (generador == null) return;
             generador.ChunkGenerationStep4.Add(
                 new ChunkGenerationStep(1510, chunk => GenerarEnChunkSeguro(chunk)));
