@@ -10,7 +10,7 @@ namespace GiganteCode
     /// <summary>
     /// Aldea indigena: 4 chozas de madera alrededor de una plaza con fogata, todo dentro de UN chunk.
     /// Probabilidad: 6% por chunk nuevo. Gente: 1 jefe, 2 chamanes, 2-3 cazadores y 5-8 indigenas.
-    /// Cofre con botin en la choza noroeste. Para API 1.8 - 1.9. Archivo nuevo: no modifica RefugioIndigenaSpawn.cs.
+    /// Cofre con botin en la choza noroeste. Para API 1.5 (Survivalcraft 2.3). Archivo nuevo: no modifica RefugioIndigenaSpawn.cs.
     /// </summary>
     public class AldeaIndigenaSpawnLoader : ModLoader
     {
@@ -90,21 +90,19 @@ namespace GiganteCode
 
         public override void __ModInitialize()
         {
-            ModsManager.RegisterHook("TerrainContentsGenerator23Initialize", this);
+            ModsManager.RegisterHook("OnTerrainContentsGenerated", this);
             ModsManager.RegisterHook("OnProjectLoaded", this);
             ModsManager.RegisterHook("OnProjectDisposed", this);
             ModsManager.RegisterHook("SubsystemUpdate", this);
         }
 
         // ---------------- Generacion (hilo del terreno) ----------------
-        public override void TerrainContentsGenerator23Initialize(
-            ITerrainContentsGenerator generator,
-            SubsystemTerrain subsystemTerrain)
+        // Hook del API 1.5 (Survivalcraft 2.3): se llama por cada chunk al terminar de generar su contenido
+        // (en el hilo del terreno, no en el principal)
+        public override void OnTerrainContentsGenerated(TerrainChunk chunk)
         {
-            TerrainContentsGenerator23 generador = generator as TerrainContentsGenerator23;
-            if (generador == null) return;
-            generador.ChunkGenerationStep4.Add(
-                new ChunkGenerationStep(1510, chunk => GenerarEnChunkSeguro(chunk)));
+            if (chunk == null) return;
+            GenerarEnChunkSeguro(chunk);
         }
 
         private static void GenerarEnChunkSeguro(TerrainChunk chunk)
@@ -403,7 +401,7 @@ namespace GiganteCode
                 int z = aldea.Z + 1;
                 if (Terrain.ExtractContents(terreno.Terrain.GetCellValueFast(x, y, z)) != 0) return;
 
-                terreno.ChangeCell(x, y, z, Terrain.MakeBlockValue(ChestBlock.Index, 0, DireccionCofre));
+                terreno.ChangeCell(x, y, z, Terrain.MakeBlockValue(ChestBlock.Index, 0, DireccionCofre), true);
                 if (!LlenarCofre(x, y, z))
                     cofresPendientes.Add(new CofrePendiente { Posicion = new Point3(x, y, z), Intentos = 0 });
             }

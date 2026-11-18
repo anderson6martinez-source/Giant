@@ -9,7 +9,7 @@ namespace GiganteCode
 {
     /// <summary>
     /// Genera refugios de madera dispersos por el mundo y los puebla con indigenas normales (y, a veces, chaman, jefe o cazador).
-    /// Para API 1.8 - 1.9. No modifica la aparicion normal de los indigenas ni sus estadisticas.
+    /// Para API 1.5 (Survivalcraft 2.3). No modifica la aparicion normal de los indigenas ni sus estadisticas.
     /// </summary>
     public class RefugioIndigenaSpawnLoader : ModLoader
     {
@@ -87,23 +87,19 @@ namespace GiganteCode
 
         public override void __ModInitialize()
         {
-            ModsManager.RegisterHook("TerrainContentsGenerator23Initialize", this);
+            ModsManager.RegisterHook("OnTerrainContentsGenerated", this);
             ModsManager.RegisterHook("OnProjectLoaded", this);
             ModsManager.RegisterHook("OnProjectDisposed", this);
             ModsManager.RegisterHook("SubsystemUpdate", this);
         }
 
         // ---------------- Generacion del refugio (hilo del terreno) ----------------
-        // Hook del API 1.8 - 1.9: agrega un paso a la generacion de chunks (paso 4, orden 1500)
-        public override void TerrainContentsGenerator23Initialize(
-            ITerrainContentsGenerator generator,
-            SubsystemTerrain subsystemTerrain)
+        // Hook del API 1.5 (Survivalcraft 2.3): se llama por cada chunk al terminar de generar su contenido
+        // (en el hilo del terreno, no en el principal)
+        public override void OnTerrainContentsGenerated(TerrainChunk chunk)
         {
-            // el hook entrega la interfaz; el generador 2.4 es el que tiene los pasos de generacion
-            TerrainContentsGenerator23 generador = generator as TerrainContentsGenerator23;
-            if (generador == null) return;
-            generador.ChunkGenerationStep4.Add(
-                new ChunkGenerationStep(1500, chunk => GenerarEnChunkSeguro(chunk)));
+            if (chunk == null) return;
+            GenerarEnChunkSeguro(chunk);
         }
 
         private static void GenerarEnChunkSeguro(TerrainChunk chunk)
@@ -389,7 +385,7 @@ namespace GiganteCode
                 int z = refugio.Z + Fondo - 2;
                 if (Terrain.ExtractContents(terreno.Terrain.GetCellValueFast(x, y, z)) != 0) return; // ocupado
 
-                terreno.ChangeCell(x, y, z, Terrain.MakeBlockValue(ChestBlock.Index, 0, DireccionCofre));
+                terreno.ChangeCell(x, y, z, Terrain.MakeBlockValue(ChestBlock.Index, 0, DireccionCofre), true);
                 if (!LlenarCofre(x, y, z))
                     cofresPendientes.Add(new CofrePendiente { Posicion = new Point3(x, y, z), Intentos = 0 });
             }
