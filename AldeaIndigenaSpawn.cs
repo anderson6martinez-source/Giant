@@ -97,7 +97,7 @@ namespace GiganteCode
         }
 
         // ---------------- Generacion (hilo del terreno) ----------------
-        public override void TerrainContentsGenerator24Initialize(
+        public override void TerrainContentsGenerator23Initialize(
             ITerrainContentsGenerator generator,
             SubsystemTerrain subsystemTerrain)
         {
