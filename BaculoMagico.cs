@@ -36,6 +36,8 @@ namespace Game
 
         private BlockMesh m_standaloneBlockMesh = new BlockMesh();
         private Texture2D m_texture;
+        private bool m_modeloListo;   // true solo si el modelo y la textura cargaron bien
+        private bool m_falloDibujo;   // true si el dibujo lanzo una excepcion (no se reintenta)
 
         public BaculoMagicoBlock()
         {
@@ -86,22 +88,11 @@ namespace Game
             return default(BlockPlacementData);
         }
 
-        // ---- DIAGNOSTICO TEMPORAL: muestra en la descripcion de la recipedia que paso con el icono ----
-        // Pon Diagnostico = false cuando el icono ya se vea bien.
-        private const bool Diagnostico = true;
-        private string m_estado = "sin inicializar";
-        private string m_errorDibujo = "";
-        private int m_dibujos;
-
-        public override string GetDescription(int value)
-        {
-            string d = base.GetDescription(value);
-            if (!Diagnostico) return d;
-            return d + " [diag: " + m_estado + "; dibujos=" + m_dibujos + (m_errorDibujo.Length > 0 ? "; error=" + m_errorDibujo : "") + "]";
-        }
-
         public override void Initialize()
         {
+            // Primero la inicializacion base del juego (valida durabilidad, nombre, etc.)
+            base.Initialize();
+
             try
             {
                 Model model = ContentManager.Get<Model>("Models/BaculoMagico");
@@ -119,14 +110,20 @@ namespace Game
                 }
 
                 m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
-                m_estado = "ok, vertices=" + m_standaloneBlockMesh.Vertices.Count + ", indices=" + m_standaloneBlockMesh.Indices.Count + ", textura=" + (m_texture != null);
+
+                // Solo se dibuja si hay geometria y textura de verdad
+                m_modeloListo = m_texture != null
+                    && m_standaloneBlockMesh.Vertices.Count > 0
+                    && m_standaloneBlockMesh.Indices.Count > 0;
+
+                if (!m_modeloListo)
+                    Log.Warning("BaculoMagico: el modelo o la textura estan vacios, no se dibujara el icono");
             }
             catch (System.Exception e)
             {
-                m_estado = "fallo al iniciar: " + e.GetType().Name + " " + e.Message;
+                m_modeloListo = false;
                 Log.Warning("BaculoMagico: no se pudo cargar el modelo o la textura (" + e.Message + ")");
             }
-            base.Initialize();
         }
 
         public override IEnumerable<int> GetCreativeValues()
@@ -140,24 +137,20 @@ namespace Game
         {
         }
 
-        private bool m_falloDibujo;
-
         public override void DrawBlock(PrimitivesRenderer3D primitivesRenderer, int value,
             Color color, float size, ref Matrix matrix, DrawBlockEnvironmentData environmentData)
         {
-            // Si algo falla (modelo o textura sin cargar), no se dibuja nada en vez de romper la pantalla
-            if (m_falloDibujo) return;
+            // Si el modelo no cargo o el dibujo ya fallo una vez, no se dibuja nada
+            // en vez de romper la pantalla (Recipedia, inventario, mano).
+            if (!m_modeloListo || m_falloDibujo) return;
             try
             {
-                if (m_texture == null) m_texture = ContentManager.Get<Texture2D>("Textures/Items/BaculoMagico");
                 BlocksManager.DrawMeshBlock(primitivesRenderer, m_standaloneBlockMesh,
                     m_texture, color, 2f * size, ref matrix, environmentData);
-                m_dibujos++;
             }
             catch (System.Exception e)
             {
                 m_falloDibujo = true;
-                m_errorDibujo = e.GetType().Name + " " + e.Message;
                 Log.Warning("BaculoMagico: no se pudo dibujar el icono (" + e.Message + ")");
             }
         }
