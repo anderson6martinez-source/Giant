@@ -19,7 +19,7 @@ namespace Game
     // ---------------------------------------------------------------
     public class BaculoMagicoBlock : Block
     {
-        public const int Index = 200; // CAMBIAR si ya esta ocupado (debe ser el mismo numero que en Blocks.csv)
+        public const int Index = 701; // CAMBIAR si ya esta ocupado (debe ser el mismo numero que en Blocks.csv)
 
         public const int Corazones = 3;
         public const float SaludPorCorazon = 0.1f;
